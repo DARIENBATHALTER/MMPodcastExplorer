@@ -1423,11 +1423,11 @@
             console.log('reviewsContainer:', reviewsContainer);
             console.log('resultsTableBody:', resultsTableBody);
             console.log('starFilterSection:', starFilterSection);
-            console.log('streamControlsSection:', streamControlsSection);
+            // console.log('streamControlsSection:', streamControlsSection);
             console.log('resultsTableSection:', resultsTableSection);
             
             if (!loading || !error || !reviewsContainer || !resultsTableBody || 
-                !starFilterSection || !streamControlsSection || !resultsTableSection) {
+                !starFilterSection || !resultsTableSection) {
                 console.error('Missing required DOM elements');
                 return;
             }
@@ -1477,7 +1477,7 @@
                 if (reviewsContainer) reviewsContainer.innerHTML = '';
                 if (resultsTableBody) resultsTableBody.innerHTML = '';
                 // Keep star filter section visible as part of controls grid
-                if (streamControlsSection) streamControlsSection.style.display = 'none';
+                // streamControlsSection no longer exists - removed duplicate section
                 if (resultsTableSection) resultsTableSection.style.display = 'none';
                 allReviewsData = [];
 
@@ -1662,7 +1662,7 @@
                     setupFilterControlListeners();
                 }
             } else {
-                if (streamControlsSection) streamControlsSection.style.display = 'none';
+                // streamControlsSection no longer exists - removed duplicate section
                 if (allReviewsData.length > 0) {
                     // Keep star filter section visible as part of controls grid
                     setupFilterControlListeners();
@@ -2140,8 +2140,8 @@
             return outerDiv;
         }
 
-        // Stream control elements
-        const streamControlsSection = document.getElementById('streamControlsSection');
+        // Stream control elements (removed - no longer needed)
+        // const streamControlsSection = document.getElementById('streamControlsSection');
         const streamFilterSubmitButton = document.getElementById('streamFilterSubmitButton');
         let streamSelectedStarRatings = [];
         let authorSortDirection = 'asc';
