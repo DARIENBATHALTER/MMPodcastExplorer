@@ -1,0 +1,2427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MM Podcast Review Explorer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <!-- Add FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #1a1a1a;
+            --secondary-color: #f8f9fa;
+            --accent-color: #8b5cf6;
+            --accent-hover: #7c3aed;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
+            --border-color: #e9ecef;
+            --shadow-light: 0 2px 12px rgba(0, 0, 0, 0.04);
+            --shadow-medium: 0 4px 24px rgba(0, 0, 0, 0.08);
+            --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.12);
+            --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            --gradient-secondary: linear-gradient(135deg, #8b5cf6 0%, #c4b5fd 100%);
+            --titlebar-bg: #353a3f;
+            --titlebar-text: #e4e6ea;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin: 0;
+            padding-top: 75px;
+        }
+
+        /* Titlebar Header */
+        .titlebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 75px;
+            background: var(--titlebar-bg);
+            border-bottom: 1px solid #4a4b4c;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .titlebar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .titlebar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .titlebar-center {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            max-width: 800px;
+            margin: 0 2rem;
+        }
+
+        .titlebar-search {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .titlebar-search input {
+            width: 100%;
+            padding: 0.5rem 0.75rem 0.5rem 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--titlebar-text);
+            transition: all 0.3s ease;
+        }
+
+        .titlebar-search input::placeholder {
+            color: rgba(228, 230, 234, 0.7);
+        }
+
+        .titlebar-search input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+
+        .titlebar-search i {
+            position: absolute;
+            left: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(228, 230, 234, 0.7);
+            font-size: 0.8rem;
+        }
+
+        .titlebar-filters {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .titlebar-filter-btn {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--titlebar-text);
+            white-space: nowrap;
+        }
+
+        .titlebar-filter-btn:hover, .titlebar-filter-btn:focus {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .titlebar-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .titlebar h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--titlebar-text);
+            margin: 0;
+        }
+
+        .help-button {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--titlebar-text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .help-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            transition: max-width 0.3s ease-in-out;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-light);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .stat-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-card .label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-light);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .file-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .file-input-container input[type="file"] {
+            display: none;
+        }
+
+        .file-input-label {
+            padding: 0.75rem 2rem;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .file-name {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Two Column Controls Grid */
+        .controls-grid {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 1.5rem;
+            margin-bottom: 0.5rem;
+            padding: 0 2rem;
+            width: 100%;
+            max-width: none;
+            align-items: flex-start;
+        }
+
+        .control-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-light);
+            border: 1px solid var(--border-color);
+            flex: 1 1 50%;
+            min-width: 0;
+            max-width: 50%;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 1rem 0;
+        }
+
+        .export-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        /* Force side-by-side layout */
+        #controlsGrid {
+            display: flex !important;
+            flex-direction: row !important;
+            width: 100% !important;
+        }
+        
+        #controlsGrid .control-card {
+            flex: 1 1 50% !important;
+            max-width: 48% !important;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .controls-grid, #controlsGrid {
+                flex-direction: column !important;
+                gap: 1rem;
+            }
+            
+            #controlsGrid .control-card {
+                max-width: 100% !important;
+            }
+        }
+
+        /* Combined Format and Filter Section */
+        .format-filter-section {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-light);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .format-filter-row {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .format-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 200px;
+        }
+
+        .section-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        .format-dropdown {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .format-dropdown:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+        }
+
+        .star-filter {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+        }
+
+        .star-rating-buttons {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: nowrap;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .star-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.2rem;
+            padding: 0.3rem 0.4rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            background-color: white;
+            transition: all 0.3s ease;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .star-button:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--accent-color);
+        }
+
+        .star-button.selected {
+            background-color: rgba(139, 92, 246, 0.1);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .star-button .fas.fa-star {
+            color: #FFB800;
+            font-size: 0.7rem;
+        }
+
+        .star-count {
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .star-button.selected .star-count {
+            color: var(--accent-color);
+        }
+
+        /* Results Table Section */
+        #resultsTableSection {
+            display: none;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-light);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        
+
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .table-controls .export-selected-button {
+            padding: 0.75rem 1.5rem;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .table-controls .export-selected-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .table-controls .export-selected-button:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #resultsTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        #resultsTable th, #resultsTable td {
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        #resultsTable th {
+            background-color: var(--secondary-color);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        #resultsTable th:hover {
+            background-color: #e8e8e8;
+        }
+
+        #resultsTable input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent-color);
+        }
+
+        #resultsTable .view-btn,
+        #resultsTable .export-btn {
+            padding: 0.4rem 0.8rem;
+            margin-right: 0.3rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        #resultsTable .view-btn {
+            background-color: var(--secondary-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        #resultsTable .view-btn:hover {
+            background-color: var(--border-color);
+        }
+        
+        #resultsTable .export-btn {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        #resultsTable .export-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+        }
+
+        /* Stream View Controls - Hidden (using top controls grid instead) */
+        .stream-controls {
+            display: none !important;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-light);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .stream-controls fieldset {
+            border: none;
+            padding: 0;
+            margin: 0 0 1rem 0;
+        }
+
+        .stream-controls legend {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+        }
+        
+        .stream-keyword-search {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .stream-keyword-search:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .sort-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .sort-button {
+            padding: 0.6rem 1.2rem;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sort-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        /* Reviews Section */
+        .reviews-section {
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Reviews Container */
+        .reviews-container {
+            column-count: auto;
+            column-width: 400px;
+            column-gap: 1.5rem;
+            max-width: 100%;
+        }
+
+        .review-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-light);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            break-inside: avoid;
+            margin-bottom: 1.5rem;
+            width: 100%;
+            display: inline-block;
+        }
+
+        .review-card:hover {
+            box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .review-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .author-date-block {
+            text-align: right;
+            flex-shrink: 0;
+            margin-left: 1rem;
+        }
+
+        .author-date {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .review-stars {
+            color: #FFB800;
+            font-size: 1.1rem;
+            margin: 0.5rem 0;
+            letter-spacing: 1px;
+        }
+
+        .review-content {
+            color: var(--text-primary);
+            line-height: 1.5;
+            font-size: 0.95rem;
+            white-space: pre-line;
+        }
+
+        /* Loading and Error States */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .loading i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #FF3B30;
+            text-align: center;
+            padding: 1rem;
+            display: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-heavy);
+            position: relative;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: -2rem -2rem 1.5rem -2rem;
+            padding: 1.5rem 2rem;
+            background: var(--gradient-primary);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+            margin: 0;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .modal-body {
+            line-height: 1.6;
+        }
+
+        .modal-body h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.5rem 0;
+            color: var(--text-primary);
+        }
+
+        .modal-body p {
+            margin: 0.5rem 0;
+            color: var(--text-primary);
+        }
+
+        .copyright {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Export Progress Indicator */
+        .export-progress {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: white;
+            color: var(--text-primary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-heavy);
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+            display: none;
+            width: 300px;
+        }
+
+        .export-progress.active {
+            display: block;
+            animation: slideInUp 0.3s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .export-progress-bar {
+            height: 8px;
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .export-progress-bar-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 4px;
+        }
+
+        .export-progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .export-progress-cancel {
+            background-color: #FF3B30;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: 500;
+        }
+
+        .export-progress-cancel:hover {
+            background-color: #D72D25;
+        }
+
+        /* Single View Overlay */
+        #singleViewOverlay {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(40, 40, 40, 0.9);
+            align-items: center;
+            justify-content: center;
+        }
+
+        #overlayContentWrapper {
+            position: relative;
+            background-color: transparent;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+        }
+
+        #overlayCloseButton {
+            position: absolute;
+            top: 10px;
+            left: -50px;
+            color: #fff;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1010;
+            background: none;
+            border: none;
+            padding: 5px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(0,0,0,0.3);
+        }
+
+        #overlayCloseButton:hover {
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        /* Screenshot render area */
+        #screenshotRenderArea {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+        }
+
+        /* Replace CSV button */
+        .replace-csv-button {
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--secondary-color);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .replace-csv-button:hover {
+            background: var(--border-color);
+            border-color: var(--accent-color);
+        }
+
+        /* Single view render styles - keeping all the existing screenshot functionality */
+        .iphone-sim-view-render {
+            width: 375px; 
+            height: 812px;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .iphone-sim-content-area {
+            position: absolute;
+            top: 75px;
+            left: 25px;
+            right: 25px;
+            bottom: 70px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: rgba(255,255,255,0.9);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            color: #000;
+            word-break: break-word;
+        }
+
+        .fullscreen-light-view-render {
+            width: 1200px; 
+            height: 750px; 
+            background-color: #ffffff;
+            position: relative;
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .fullscreen-dark-view-render {
+            width: 1200px; 
+            height: 750px; 
+            background-color: #1f1f1f;
+            color: #ffffff; 
+            position: relative;
+            display: flex; 
+            flex-direction: column; 
+        }
+        
+        .fullscreen-header-img {
+            width: 100%;
+            max-height: 100px;
+            object-fit: cover; 
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .single-review-content-area {
+            padding: 15px 25px;
+            flex-grow: 1; 
+            overflow-y: auto; 
+        }
+
+        .single-review-content-area .review-title { font-size: 1.6rem; margin-bottom: 0.6rem; font-weight: bold; }
+        .single-review-content-area .author-date { font-size: 0.9rem; color: #555; margin-bottom: 0.6rem; }
+        .single-review-content-area .review-stars { font-size: 1.1rem; margin-bottom: 0.6rem; }
+        .single-review-content-area .review-content { font-size: 1rem; line-height: 1.5; }
+        
+        .fullscreen-dark-view-render .single-review-content-area .author-date { color: #bbbbbb; }
+        .fullscreen-dark-view-render .single-review-content-area .review-title { color: #ffffff; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .titlebar {
+                padding: 0 16px;
+                height: auto;
+                min-height: 75px;
+            }
+
+            .titlebar-content {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0;
+                padding: 0;
+            }
+            
+            .titlebar-left {
+                padding: 12px 0;
+                justify-content: space-between;
+                width: 100%;
+            }
+            
+            .titlebar-center {
+                padding: 0 0 12px 0;
+                margin: 0;
+                max-width: none;
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .titlebar-search {
+                min-width: auto;
+                max-width: none;
+            }
+            
+            .titlebar-search input {
+                width: 100%;
+            }
+            
+            .titlebar-filters {
+                justify-content: flex-start;
+            }
+            
+            .help-button {
+                order: 1;
+            }
+
+            .titlebar h1 {
+                font-size: 1.2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .reviews-container {
+                column-count: 1;
+                column-width: auto;
+            }
+
+            .review-card {
+                padding: 1rem;
+            }
+
+            .review-title {
+                font-size: 1rem;
+            }
+
+            .author-date {
+                font-size: 0.8rem;
+            }
+
+            #sort-select {
+                width: 100%;
+                max-width: 200px;
+            }
+
+            /* Mobile responsive for combined format-filter section */
+            .format-filter-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+
+            .format-selector {
+                min-width: auto;
+                justify-content: space-between;
+            }
+
+            .star-filter {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .star-rating-buttons {
+                justify-content: space-between;
+            }
+
+            .star-button {
+                flex: 1;
+                min-width: 0;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Titlebar Header -->
+    <div class="titlebar">
+        <div class="titlebar-content">
+            <div class="titlebar-left">
+                <div class="titlebar-icon">
+                    <img src="Podcasts_(iOS).svg.png" alt="Podcasts" style="width: 28px; height: 28px;">
+                </div>
+                <h1>MM Podcast Review Explorer</h1>
+            </div>
+            <div class="titlebar-center">
+                <div class="titlebar-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="titlebarSearchInput" placeholder="Search reviews by content, author, or keywords...">
+                </div>
+                <div class="titlebar-filters">
+                    <select id="sort-select" class="titlebar-filter-btn" style="border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--titlebar-text); padding: 8px 12px;">
+                        <option value="all">All Reviews</option>
+                        <option value="high-rating">High Rating (4-5 stars)</option>
+                        <option value="recent">Most Recent</option>
+                        <option value="longest">Longest Reviews</option>
+                    </select>
+                </div>
+            </div>
+            <button class="help-button" id="helpButton">
+                <i class="fas fa-question"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal" id="helpModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">About Re-Viewer</h2>
+                <button class="modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Re-Viewer is a tool for visualizing and exporting podcast reviews in various screenshot formats.</p>
+                <p class="copyright">© 2025 Darien Bathalter</p>
+                <h3>Features:</h3>
+                <p>• Import podcast reviews from CSV files</p>
+                <p>• Filter reviews by star rating</p>
+                <p>• Export reviews as iPhone or fullscreen screenshots</p>
+                <p>• Search and sort reviews</p>
+                <p>• Batch export multiple reviews</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Stats Grid -->
+        <div class="stats-grid" id="statsGrid" style="display: none;">
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-file-alt"></i></div>
+                <div class="value" id="totalReviews">0</div>
+                <div class="label">Total Reviews</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-star"></i></div>
+                <div class="value" id="avgRating">0</div>
+                <div class="label">Average Rating</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-trophy"></i></div>
+                <div class="value" id="fiveStarReviews">0</div>
+                <div class="label">5-Star Reviews</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-users"></i></div>
+                <div class="value" id="uniqueAuthors">0</div>
+                <div class="label">Unique Authors</div>
+            </div>
+        </div>
+
+
+        <!-- Two Column Layout for Export and Filters -->
+        <div class="controls-grid" id="controlsGrid" style="display: flex;">
+            <!-- Export Options Card -->
+            <div class="control-card">
+                <h3 class="card-title">View/Export Format</h3>
+                <div class="export-selector">
+                    <label for="viewFormatSelect" class="section-label">Format:</label>
+                    <select id="viewFormatSelect" class="format-dropdown">
+                        <option value="cardStream">Card Stream</option>
+                        <option value="iphoneSim">iPhone Light</option>
+                        <option value="iphoneSimDark">iPhone Dark</option>
+                        <option value="fullscreenLight">Fullscreen Light</option>
+                        <option value="fullscreenDark">Fullscreen Dark</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Star Rating Filter Card -->
+            <div class="control-card" id="starFilterSection">
+                <h3 class="card-title">Filter by Star Rating</h3>
+                <div class="star-rating-buttons">
+                    <div class="star-button selected" data-value="5">
+                        <span class="star-count">5</span>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="star-button selected" data-value="4">
+                        <span class="star-count">4</span>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="star-button selected" data-value="3">
+                        <span class="star-count">3</span>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="star-button selected" data-value="2">
+                        <span class="star-count">2</span>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="star-button selected" data-value="1">
+                        <span class="star-count">1</span>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <input type="checkbox" id="starSelectAll" name="starRating" value="all" checked style="display: none;">
+                <button id="filterSubmitButton" style="display: none;">Apply Filters</button>
+            </div>
+        </div>
+
+        <!-- Results Table Section -->
+        <div id="resultsTableSection">
+            <div class="table-controls">
+                <div></div>
+                <button id="exportSelectedButton" class="export-selected-button" disabled>
+                    <i class="fas fa-file-export"></i> Export Selected (0)
+                </button>
+            </div>
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAllResultsCheckbox"></th>
+                        <th data-sort="title">Title</th>
+                        <th data-sort="author">Author</th>
+                        <th data-sort="rating">Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                    <!-- Rows will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner"></i>
+            <p>Processing reviews...</p>
+        </div>
+        <div class="error" id="error"></div>
+        
+        <!-- Stream View Controls -->
+        <div class="stream-controls" id="streamControlsSection">
+            <fieldset>
+                <legend>Filter by Star Rating:</legend>
+                <div class="star-rating-buttons">
+                    <div class="star-button stream-star-button selected" data-value="5">
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star active"></i>
+                    </div>
+                    <div class="star-button stream-star-button selected" data-value="4">
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="star-button stream-star-button selected" data-value="3">
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="star-button stream-star-button selected" data-value="2">
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="star-button stream-star-button selected" data-value="1">
+                        <i class="fas fa-star active"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+            </fieldset>
+            
+        </div>
+        
+        <!-- Reviews Results Section -->
+        <div class="reviews-section">
+            <h2 class="section-title">Reviews Results:</h2>
+            <div class="reviews-container" id="reviewsStreamContainer"></div>
+        </div>
+    </div>
+
+    <div id="screenshotRenderArea"></div>
+
+    <div id="singleViewOverlay">
+        <button id="overlayCloseButton">&times;</button>
+        <div id="overlayContentWrapper">
+        </div>
+    </div>
+
+    <!-- Export Progress Indicator -->
+    <div class="export-progress" id="exportProgress">
+        <div id="exportProgressTitle">Exporting Reviews</div>
+        <div class="export-progress-bar">
+            <div class="export-progress-bar-fill" id="exportProgressBarFill"></div>
+        </div>
+        <div class="export-progress-text">
+            <span id="exportProgressText">Preparing...</span>
+            <span id="exportProgressCount"></span>
+        </div>
+        <button class="export-progress-cancel" id="cancelExportButton">Cancel</button>
+    </div>
+
+    <script>
+        // All the existing JavaScript code will remain the same
+        // Just copying it from the original file...
+        // DOM Elements
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const reviewsContainer = document.getElementById('reviewsStreamContainer');
+        const viewFormatSelect = document.getElementById('viewFormatSelect');
+        const starFilterSection = document.getElementById('starFilterSection');
+        const starRatingCheckboxes = document.querySelectorAll('#starFilterSection input[name="starRating"]');
+        const starSelectAllCheckbox = document.getElementById('starSelectAll');
+        const filterSubmitButton = document.getElementById('filterSubmitButton');
+        const resultsTableSection = document.getElementById('resultsTableSection');
+        const resultsTableBody = document.getElementById('resultsTableBody');
+        const selectAllResultsCheckbox = document.getElementById('selectAllResultsCheckbox');
+        const resultsTable = document.getElementById('resultsTable');
+        const viewModal = document.getElementById('viewModal');
+        const modalContent = document.getElementById('modalReviewContent');
+        const modalCloseButton = document.getElementById('modalCloseButton');
+        const screenshotRenderArea = document.getElementById('screenshotRenderArea');
+        const mainContainer = document.querySelector('.container');
+        const titlebarSearchInput = document.getElementById('titlebarSearchInput');
+        const sortSelect = document.getElementById('sort-select');
+
+        // New overlay elements
+        const singleViewOverlay = document.getElementById('singleViewOverlay');
+        const overlayContentWrapper = document.getElementById('overlayContentWrapper');
+        const overlayCloseButton = document.getElementById('overlayCloseButton');
+        const modalReviewContent = document.getElementById('modalReviewContent');
+        const exportSelectedButton = document.getElementById('exportSelectedButton');
+        const exportProgress = document.getElementById('exportProgress');
+        const exportProgressBarFill = document.getElementById('exportProgressBarFill');
+        const exportProgressText = document.getElementById('exportProgressText');
+        const exportProgressCount = document.getElementById('exportProgressCount');
+        const cancelExportButton = document.getElementById('cancelExportButton');
+
+        // Help modal elements
+        const helpButton = document.getElementById('helpButton');
+        const helpModal = document.getElementById('helpModal');
+        const closeModal = document.getElementById('closeModal');
+
+        // App State
+        let allReviewsData = [];
+        let filteredReviewsData = [];
+        let currentViewFormat = 'cardStream';
+        let currentSortColumn = null;
+        let currentSortDirection = 'asc';
+        let selectedStarRatings = [];
+        let lastCheckedIndex = -1;
+        let selectedRowIds = new Set();
+        let isExporting = false;
+        let cancelExportRequested = false;
+
+        // Image Data URLs (keep the same as original)
+        const imageData = {
+            blankiphone: 'blankiphone.png', 
+            blankiphoneDark: 'blankiphone_dark.png',
+            headerdark: 'headerdark.png',   
+            headerlight: 'headerlight.png'  
+        };
+
+        // All the existing functions remain the same...
+        // I'll include just the key ones here for brevity
+
+        // Event Listeners
+        helpButton.addEventListener('click', () => {
+            helpModal.classList.add('show');
+        });
+
+        closeModal.addEventListener('click', () => {
+            helpModal.classList.remove('show');
+        });
+
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.classList.remove('show');
+            }
+        });
+
+        // Auto-load CSV on page load
+        window.addEventListener('load', () => {
+            // Check if all required elements exist before loading
+            console.log('Checking DOM elements:');
+            console.log('loading:', loading);
+            console.log('error:', error);
+            console.log('reviewsContainer:', reviewsContainer);
+            console.log('resultsTableBody:', resultsTableBody);
+            console.log('starFilterSection:', starFilterSection);
+            console.log('streamControlsSection:', streamControlsSection);
+            console.log('resultsTableSection:', resultsTableSection);
+            
+            if (!loading || !error || !reviewsContainer || !resultsTableBody || 
+                !starFilterSection || !streamControlsSection || !resultsTableSection) {
+                console.error('Missing required DOM elements');
+                return;
+            }
+            loadDefaultCSV();
+        });
+
+        // Update stats display
+        function updateStats() {
+            try {
+                console.log('updateStats called, data length:', allReviewsData.length);
+                
+                const statsGrid = document.getElementById('statsGrid');
+                const controlsGrid = document.getElementById('controlsGrid');
+                
+                if (allReviewsData.length === 0) {
+                    if (statsGrid) statsGrid.style.display = 'none';
+                    return;
+                }
+
+                if (statsGrid) statsGrid.style.display = 'grid';
+                if (controlsGrid) controlsGrid.style.display = 'flex';
+
+                const totalReviews = allReviewsData.length;
+                const avgRating = (allReviewsData.reduce((sum, review) => sum + review.rating, 0) / totalReviews).toFixed(1);
+                const fiveStarReviews = allReviewsData.filter(review => review.rating === 5).length;
+                const uniqueAuthors = new Set(allReviewsData.map(review => review.author)).size;
+
+                const totalReviewsEl = document.getElementById('totalReviews');
+                const avgRatingEl = document.getElementById('avgRating');
+                const fiveStarReviewsEl = document.getElementById('fiveStarReviews');
+                const uniqueAuthorsEl = document.getElementById('uniqueAuthors');
+
+                if (totalReviewsEl) totalReviewsEl.textContent = totalReviews;
+                if (avgRatingEl) avgRatingEl.textContent = avgRating;
+                if (fiveStarReviewsEl) fiveStarReviewsEl.textContent = fiveStarReviews;
+                if (uniqueAuthorsEl) uniqueAuthorsEl.textContent = uniqueAuthors;
+            } catch (err) {
+                console.error('Error in updateStats:', err);
+            }
+        }
+
+        // Auto-load default CSV file
+        async function loadDefaultCSV() {
+            try {
+                if (loading) loading.style.display = 'block';
+                if (error) error.style.display = 'none';
+                if (reviewsContainer) reviewsContainer.innerHTML = '';
+                if (resultsTableBody) resultsTableBody.innerHTML = '';
+                // Keep star filter section visible as part of controls grid
+                if (streamControlsSection) streamControlsSection.style.display = 'none';
+                if (resultsTableSection) resultsTableSection.style.display = 'none';
+                allReviewsData = [];
+
+                const response = await fetch(encodeURI('Medical_Medium_Podcast_Podcast_Apple_Podcasts_reviews_20250428141731528456.xlsx - Date Sort.csv'));
+                if (!response.ok) {
+                    throw new Error('Could not load default CSV file');
+                }
+                const csvText = await response.text();
+                
+                const fakeEvent = { target: { result: csvText } };
+                handleFileLoad(fakeEvent);
+            } catch (err) {
+                if (error) {
+                    error.textContent = 'Error loading default reviews: ' + err.message;
+                    error.style.display = 'block';
+                }
+                if (loading) loading.style.display = 'none';
+            }
+        }
+
+        // File Load Handler
+        function handleFileLoad(event) {
+            try {
+                console.log('handleFileLoad called');
+                const csvText = event.target.result;
+                const rawRows = parseCSV(csvText);
+                
+                if (rawRows.length < 2) {
+                    throw new Error("CSV file is empty or has no data rows.");
+                }
+                rawRows.shift();
+
+                allReviewsData = rawRows.map((columns, index) => {
+                    if (columns.length >= 5) {
+                        return {
+                            id: index,
+                            title: columns[0],
+                            author: columns[1],
+                            date: columns[2],
+                            rating: parseInt(columns[3]) || 0,
+                            content: columns[4]
+                        };
+                    }
+                    return null;
+                }).filter(review => review !== null);
+
+                updateStats();
+
+                if (currentViewFormat === 'cardStream') {
+                    displayReviewsAsStream(allReviewsData);
+                    // Setup filter controls for top controls grid
+                    setupFilterControlListeners();
+                } else {
+                    // Keep star filter section visible as part of controls grid
+                    setupFilterControlListeners();
+                    applyTableFilters(true);
+                }
+
+            } catch (err) {
+                if (error) {
+                    error.textContent = 'Error processing CSV: ' + err.message;
+                    error.style.display = 'block';
+                }
+            } finally {
+                if (loading) loading.style.display = 'none';
+            }
+        }
+
+        // Parse CSV content
+        function parseCSV(text) {
+            const rows = [];
+            let p = 0;
+            let currentRow = [];
+            let field = '';
+            let inQuotes = false;
+
+            function pushField() {
+                currentRow.push(field.trim());
+                field = '';
+            }
+
+            function pushRow() {
+                if (currentRow.length > 0) {
+                    rows.push(currentRow);
+                    currentRow = [];
+                }
+            }
+
+            while (p < text.length) {
+                let char = text[p];
+                p++;
+
+                if (char === '"') {
+                    if (inQuotes && text[p] === '"') {
+                        field += '"';
+                        p++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                    continue;
+                }
+
+                if (char === '\r') {
+                    if (text[p] === '\n') {
+                        p++;
+                    }
+                    if (!inQuotes) {
+                        pushField();
+                        pushRow();
+                    } else {
+                        field += '\n';
+                    }
+                    continue;
+                }
+                if (char === '\n') {
+                    if (!inQuotes) {
+                        pushField();
+                        pushRow();
+                    } else {
+                        field += '\n';
+                    }
+                    continue;
+                }
+
+                if (char === ',' && !inQuotes) {
+                    pushField();
+                    continue;
+                }
+
+                field += char;
+            }
+
+            pushField();
+            pushRow();
+
+            return rows;
+        }
+
+        // Create Review Card for Stream View
+        function createReviewCard(title, author, date, rating, content) {
+            const stars = rating;
+            const reviewCard = document.createElement('div');
+            reviewCard.className = 'review-card';
+            
+            content = content.replace(/[\r\n]+/g, '\n').trim();
+            
+            reviewCard.innerHTML = `
+                <div class="review-header">
+                    <div class="review-title">${escapeHtml(title)}</div>
+                    <div class="author-date-block">
+                        <div class="author-date">${escapeHtml(date)}</div>
+                        <div class="author-date">${escapeHtml(author)}</div>
+                    </div>
+                </div>
+                <div class="review-stars">${'★'.repeat(Math.min(5, stars))}</div>
+                <div class="review-content">${escapeHtml(content)}</div>
+            `;
+
+            reviewsContainer.appendChild(reviewCard);
+        }
+
+        // HTML Escape Helper
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // View format change handler
+        viewFormatSelect.addEventListener('change', (event) => {
+            currentViewFormat = event.target.value;
+            if (reviewsContainer) reviewsContainer.innerHTML = '';
+            if (resultsTableBody) resultsTableBody.innerHTML = '';
+            if (resultsTableSection) resultsTableSection.style.display = 'none';
+            if (mainContainer) mainContainer.classList.remove('table-view-active');
+
+            if (currentViewFormat === 'cardStream') {
+                // Keep star filter section visible as part of controls grid
+                // Stream controls no longer needed - using top controls grid
+                if (allReviewsData.length > 0) {
+                    displayReviewsAsStream(allReviewsData);
+                    setupFilterControlListeners();
+                }
+            } else {
+                if (streamControlsSection) streamControlsSection.style.display = 'none';
+                if (allReviewsData.length > 0) {
+                    // Keep star filter section visible as part of controls grid
+                    setupFilterControlListeners();
+                    applyTableFilters(true);
+                } else {
+                    // Keep star filter section visible as part of controls grid
+                }
+            }
+        });
+
+        // Setup function to initialize all filter control listeners
+        function setupFilterControlListeners() {
+            selectedStarRatings = [1, 2, 3, 4, 5];
+            
+            const starButtons = document.querySelectorAll('.star-button:not(.stream-star-button)');
+            
+            starButtons.forEach(button => {
+                const newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
+            });
+            
+            document.querySelectorAll('.star-button:not(.stream-star-button)').forEach(button => {
+                button.addEventListener('click', function() {
+                    const value = parseInt(button.dataset.value);
+                    
+                    if (button.classList.contains('selected')) {
+                        button.classList.remove('selected');
+                        selectedStarRatings = selectedStarRatings.filter(rating => rating !== value);
+                    } else {
+                        button.classList.add('selected');
+                        selectedStarRatings.push(value);
+                    }
+                    
+                    applyFilters(false);
+                });
+            });
+        }
+        
+        // Apply filters and respect current view mode
+        function applyFilters(forceTableView = false) {
+            if (selectedStarRatings.length === 0) {
+                filteredReviewsData = [];
+            } else {
+                filteredReviewsData = allReviewsData.filter(review => 
+                    selectedStarRatings.includes(review.rating));
+            }
+            
+            if (forceTableView || currentViewFormat !== 'cardStream') {
+                // Switch to table view
+                if (resultsTableSection) resultsTableSection.style.display = 'block';
+                if (mainContainer) mainContainer.classList.add('table-view-active');
+                populateResultsTable(filteredReviewsData);
+            } else {
+                // Stay in card stream view
+                displayReviewsAsStream(filteredReviewsData);
+            }
+        }
+
+        // Legacy function for table-specific filtering
+        function applyTableFilters(initialLoad = false) {
+            applyFilters(true);
+        }
+
+
+        // Titlebar search functionality
+        titlebarSearchInput.addEventListener('input', () => {
+            const searchTerm = titlebarSearchInput.value.toLowerCase();
+            if (currentViewFormat === 'cardStream') {
+                // Filter stream view
+                const filteredReviews = filteredReviewsData.filter(review => {
+                    return review.title.toLowerCase().includes(searchTerm) || 
+                           review.content.toLowerCase().includes(searchTerm) ||
+                           review.author.toLowerCase().includes(searchTerm);
+                });
+                displayReviewsAsStream(filteredReviews);
+            } else {
+                // Filter table view
+                const reviewsToDisplay = filteredReviewsData.filter(review => {
+                    return review.title.toLowerCase().includes(searchTerm) || 
+                           review.content.toLowerCase().includes(searchTerm) ||
+                           review.author.toLowerCase().includes(searchTerm);
+                });
+                populateResultsTable(reviewsToDisplay);
+            }
+        });
+
+        // Titlebar sort functionality  
+        sortSelect.addEventListener('change', (e) => {
+            const sortType = e.target.value;
+            let sortedReviews = [...allReviewsData];
+            
+            switch (sortType) {
+                case 'high-rating':
+                    sortedReviews = sortedReviews.filter(review => review.rating >= 4);
+                    break;
+                case 'recent':
+                    sortedReviews = sortedReviews.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'longest':
+                    sortedReviews = sortedReviews.sort((a, b) => b.content.length - a.content.length);
+                    break;
+                case 'all':
+                default:
+                    // No filtering or sorting
+                    break;
+            }
+            
+            if (currentViewFormat === 'cardStream') {
+                displayReviewsAsStream(sortedReviews);
+            } else {
+                // Update filtered data for table view
+                filteredReviewsData = sortedReviews.filter(review => 
+                    selectedStarRatings.includes(review.rating));
+                populateResultsTable(filteredReviewsData);
+            }
+        });
+        
+        resultsTable.querySelectorAll('thead th[data-sort]').forEach(headerCell => {
+            headerCell.addEventListener('click', () => {
+                const column = headerCell.dataset.sort;
+                if (currentSortColumn === column) {
+                    currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSortColumn = column;
+                    currentSortDirection = 'asc';
+                }
+                sortAndPopulateTable();
+            });
+        });
+        
+        selectAllResultsCheckbox.addEventListener('change', (event) => {
+            const isChecked = event.target.checked;
+            const checkboxes = resultsTableBody.querySelectorAll('input[type="checkbox"]');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+                updateSelectedState(checkbox.getAttribute('data-review-id'), isChecked);
+            });
+            
+            lastCheckedIndex = isChecked ? 0 : -1;
+            
+            updateExportButtonState();
+        });
+
+        function sortAndPopulateTable() {
+            const sortedReviews = [...filteredReviewsData];
+
+            if (currentSortColumn) {
+                sortedReviews.sort((a, b) => {
+                    let valA = a[currentSortColumn];
+                    let valB = b[currentSortColumn];
+
+                    if (typeof valA === 'string') valA = valA.toLowerCase();
+                    if (typeof valB === 'string') valB = valB.toLowerCase();
+                    
+                    if (currentSortColumn === 'rating') {
+                        valA = parseInt(valA);
+                        valB = parseInt(valB);
+                    }
+
+                    if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+                    if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+            populateResultsTable(sortedReviews);
+        }
+
+        function populateResultsTable(reviews) {
+            resultsTableBody.innerHTML = '';
+            if (reviews.length === 0) {
+                resultsTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No reviews match your criteria.</td></tr>';
+                return;
+            }
+            reviews.forEach((review, index) => {
+                const row = resultsTableBody.insertRow();
+                const checkboxCell = row.insertCell();
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.setAttribute('data-review-id', review.id);
+                checkbox.setAttribute('data-row-index', index);
+                
+                checkbox.addEventListener('click', function(e) {
+                    const currentIndex = parseInt(this.getAttribute('data-row-index'));
+                    const reviewId = this.getAttribute('data-review-id');
+                    
+                    if (e.shiftKey && lastCheckedIndex !== -1) {
+                        const start = Math.min(lastCheckedIndex, currentIndex);
+                        const end = Math.max(lastCheckedIndex, currentIndex);
+                        
+                        const checkboxes = resultsTableBody.querySelectorAll('input[type="checkbox"]');
+                        
+                        const shouldCheck = this.checked;
+                        
+                        for (let i = start; i <= end; i++) {
+                            const cb = checkboxes[i];
+                            cb.checked = shouldCheck;
+                            updateSelectedState(cb.getAttribute('data-review-id'), shouldCheck);
+                        }
+                    } else {
+                        updateSelectedState(reviewId, this.checked);
+                    }
+                    
+                    lastCheckedIndex = this.checked ? currentIndex : -1;
+                    
+                    updateExportButtonState();
+                });
+                
+                checkboxCell.appendChild(checkbox);
+                
+                row.insertCell().textContent = review.title;
+                row.insertCell().textContent = review.author;
+                row.insertCell().textContent = `${review.rating} ★`;
+                
+                const actionsCell = row.insertCell();
+                actionsCell.style.display = "flex";
+                actionsCell.style.gap = "5px";
+                
+                const viewButton = document.createElement('button');
+                viewButton.innerHTML = '<i class="fas fa-eye"></i> View';
+                viewButton.className = 'view-btn';
+                viewButton.onclick = () => handleViewReview(review);
+                actionsCell.appendChild(viewButton);
+
+                const exportButton = document.createElement('button');
+                exportButton.innerHTML = '<i class="fas fa-file-export"></i> Export';
+                exportButton.className = 'export-btn';
+                exportButton.onclick = () => handleExportReview(review);
+                actionsCell.appendChild(exportButton);
+            });
+            selectAllResultsCheckbox.checked = false;
+            updateExportButtonState();
+        }
+
+        function displayReviewsAsStream(reviews) {
+            reviewsContainer.innerHTML = '';
+            
+            if (reviews.length === 0) {
+                if (allReviewsData.length > 0) {
+                    reviewsContainer.innerHTML = '<p style="text-align: center; margin: 2rem 0; color: #666;">No reviews match your filter criteria.</p>';
+                } else {
+                    reviewsContainer.innerHTML = '<p style="text-align: center; margin: 2rem 0; color: #666;">No reviews to display. Please upload a CSV file.</p>';
+                }
+                 return;
+            }
+            
+            reviews.forEach(r => createReviewCard(r.title, r.author, r.date, r.rating, r.content));
+        }
+
+        function handleViewReview(review) {
+            overlayContentWrapper.innerHTML = '';
+            const viewElement = renderSingleReviewToElement(review, currentViewFormat, overlayContentWrapper, false);
+            if (viewElement) {
+                singleViewOverlay.style.display = "flex"; 
+                setTimeout(() => {
+                    const contentRect = overlayContentWrapper.getBoundingClientRect();
+                    overlayCloseButton.style.top = (contentRect.top + 10) + 'px';
+                    overlayCloseButton.style.left = (contentRect.left - 50) + 'px';
+                }, 10);
+            }
+        }
+
+        overlayCloseButton.onclick = () => {
+            singleViewOverlay.style.display = "none";
+            overlayContentWrapper.innerHTML = '';
+        };
+
+        async function handleExportReview(review) {
+            exportReview(review).catch(err => {
+                alert("Error generating screenshot. See console for details.");
+            });
+        }
+        
+        function renderSingleReviewToElement(review, format, targetElement, forExport = false) {
+            targetElement.innerHTML = '';
+            const RENDER_STYLES = {
+                iphoneSim: { width: '375px', height: '812px' },
+                iphoneSimDark: { width: '375px', height: '812px' },
+                fullscreenLight: { width: '1200px', height: '750px' },
+                fullscreenDark: { width: '1200px', height: '750px' }
+            };
+
+            const outerDiv = document.createElement('div');
+            let contentArea;
+
+            if (format === 'iphoneSim' || format === 'iphoneSimDark') {
+                const isDarkMode = format === 'iphoneSimDark';
+                
+                outerDiv.style.width = RENDER_STYLES[format].width;
+                outerDiv.style.height = RENDER_STYLES[format].height;
+                
+                const bgImagePath = format === 'iphoneSimDark' ? 'blankiphone_dark.png' : 'blankiphone.png';
+                
+                outerDiv.style.backgroundImage = `url('${bgImagePath}')`;
+                outerDiv.style.backgroundSize = 'contain';
+                outerDiv.style.backgroundRepeat = 'no-repeat';
+                outerDiv.style.backgroundPosition = 'center';
+                
+                outerDiv.style.position = 'relative';
+                outerDiv.style.overflow = 'hidden';
+
+                const reviewCard = document.createElement('div');
+                reviewCard.style.position = 'absolute';
+                reviewCard.style.top = '23%';
+                reviewCard.style.left = '5%';
+                reviewCard.style.right = '5%';
+                reviewCard.style.backgroundColor = isDarkMode ? '#333' : '#f0f0f0';
+                reviewCard.style.borderRadius = '12px';
+                reviewCard.style.padding = '15px';
+                reviewCard.style.boxShadow = isDarkMode ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.1)';
+                reviewCard.style.zIndex = '1';
+                outerDiv.appendChild(reviewCard);
+                
+                contentArea = document.createElement('div');
+                contentArea.style.overflowY = 'auto';
+                contentArea.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif';
+                contentArea.style.color = isDarkMode ? '#fff' : '#000';
+                contentArea.style.wordBreak = 'break-word';
+                contentArea.style.position = 'relative';
+                contentArea.style.zIndex = '2';
+                
+                reviewCard.appendChild(contentArea);
+            } else if (format === 'fullscreenLight' || format === 'fullscreenDark') {
+                outerDiv.style.width = RENDER_STYLES[format].width;
+                outerDiv.style.height = RENDER_STYLES[format].height;
+                outerDiv.style.position = 'relative';
+                outerDiv.style.backgroundColor = (format === 'fullscreenDark' ? '#1f1f1f' : '#ffffff');
+                outerDiv.style.borderRadius = '12px';
+                outerDiv.style.overflow = 'hidden';
+                outerDiv.style.display = 'flex';
+                outerDiv.style.flexDirection = 'column';
+                outerDiv.style.alignItems = 'stretch';
+                outerDiv.style.padding = '10px';
+                
+                const contentContainer = document.createElement('div');
+                contentContainer.style.width = '100%';
+                contentContainer.style.display = 'flex';
+                contentContainer.style.flexDirection = 'column';
+                contentContainer.style.flex = '1';
+                contentContainer.style.boxSizing = 'border-box';
+                outerDiv.appendChild(contentContainer);
+                
+                const headerImg = document.createElement('img');
+                const headerSrc = format === 'fullscreenDark' ? 'headerdark.png' : 'headerlight.png';
+                
+                headerImg.onerror = function() {
+                    headerImg.style.display = 'none'; 
+                    const fallbackHeader = document.createElement('div');
+                    fallbackHeader.style.width = '100%';
+                    fallbackHeader.style.height = '80px';
+                    fallbackHeader.style.backgroundColor = format === 'fullscreenLight' ? '#f0f0f0' : '#333333';
+                    fallbackHeader.style.marginBottom = '20px';
+                    fallbackHeader.style.display = 'flex';
+                    fallbackHeader.style.alignItems = 'center';
+                    fallbackHeader.style.justifyContent = 'center';
+                    fallbackHeader.innerHTML = '<h2 style="margin:0; color:' + 
+                        (format === 'fullscreenLight' ? '#333' : '#eee') + 
+                        ';">Review Details</h2>';
+                    contentContainer.insertBefore(fallbackHeader, headerImg); 
+                };
+                
+                headerImg.src = headerSrc;
+                headerImg.style.width = '100%';
+                headerImg.style.height = 'auto';
+                headerImg.style.objectFit = 'contain';
+                headerImg.style.marginBottom = '20px';
+                headerImg.style.display = 'block';
+                contentContainer.appendChild(headerImg);
+
+                contentArea = document.createElement('div');
+                contentArea.classList.add('single-review-content-area');
+                contentArea.style.color = (format === 'fullscreenDark' ? '#ffffff' : '#1c1c1e');
+                contentArea.style.width = '100%';
+                contentArea.style.flex = '1';
+                contentArea.style.overflow = 'auto';
+                contentContainer.appendChild(contentArea);
+            } else {
+                targetElement.textContent = 'Unknown view format selected.';
+                return null;
+            }
+            
+            const titleEl = document.createElement('div');
+            titleEl.textContent = review.title;
+
+            const starsEl = document.createElement('div');
+            starsEl.textContent = '★'.repeat(Math.min(5, review.rating));
+            starsEl.style.color = '#FFB800';
+
+            const contentEl = document.createElement('div');
+            contentEl.textContent = review.content.replace(/[\r\n]+/g, '\n').trim();
+            contentEl.style.whiteSpace = 'pre-line';
+
+            if (format === 'iphoneSim' || format === 'iphoneSimDark') {
+                const isDarkMode = format === 'iphoneSimDark';
+                
+                titleEl.style.fontSize = '18px';
+                titleEl.style.fontWeight = '600';
+                titleEl.style.marginBottom = '5px';
+                titleEl.style.color = isDarkMode ? '#fff' : '#000';
+
+                const authorContainer = document.createElement('div');
+                authorContainer.style.display = 'flex';
+                authorContainer.style.justifyContent = 'space-between';
+                authorContainer.style.marginBottom = '8px';
+                
+                const authorDateEl = document.createElement('div');
+                authorDateEl.style.textAlign = 'right';
+                authorDateEl.style.fontSize = '12px';
+                authorDateEl.style.color = isDarkMode ? '#ccc' : '#666';
+                
+                const dateSpan = document.createElement('div');
+                dateSpan.textContent = review.date;
+                authorDateEl.appendChild(dateSpan);
+                
+                const authorSpan = document.createElement('div');
+                authorSpan.textContent = review.author;
+                authorDateEl.appendChild(authorSpan);
+                
+                const headerDiv = document.createElement('div');
+                headerDiv.style.display = 'flex';
+                headerDiv.style.justifyContent = 'space-between';
+                headerDiv.appendChild(titleEl);
+                headerDiv.appendChild(authorDateEl);
+
+                starsEl.style.fontSize = '14px';
+                starsEl.style.marginBottom = '8px';
+                
+                contentEl.style.fontSize = '14px';
+                contentEl.style.lineHeight = '1.4';
+                contentEl.style.color = isDarkMode ? '#eee' : '#000';
+                
+                contentArea.appendChild(headerDiv);
+                contentArea.appendChild(starsEl);
+                contentArea.appendChild(contentEl);
+                
+                if (review.content.includes('❤') || review.content.includes('💗') || 
+                    review.content.includes('♥') || review.content.includes('💕')) {
+                    const heartEl = document.createElement('div');
+                    heartEl.textContent = '💗';
+                    heartEl.style.fontSize = '20px';
+                    heartEl.style.marginTop = '10px';
+                    contentArea.appendChild(heartEl);
+                }
+            } else if (format === 'fullscreenLight' || format === 'fullscreenDark') {
+                titleEl.style.fontSize = '20px';
+                titleEl.style.fontWeight = '600';
+                titleEl.style.marginBottom = '8px';
+                if (format === 'fullscreenDark') titleEl.style.color = '#fff';
+
+                const authorEl = document.createElement('div');
+                authorEl.style.textAlign = 'left';
+                authorEl.style.fontSize = '12px';
+                authorEl.style.color = format === 'fullscreenDark' ? '#ccc' : '#555';
+                authorEl.style.marginBottom = '6px';
+                authorEl.textContent = `${review.author} - ${review.date}`;
+
+                starsEl.style.fontSize = '16px';
+                starsEl.style.marginBottom = '8px';
+
+                contentEl.style.fontSize = '14px';
+                contentEl.style.lineHeight = '1.5';
+            if (format === 'fullscreenDark') contentEl.style.color = '#eee';
+
+            contentArea.appendChild(titleEl);
+                contentArea.appendChild(authorEl);
+            contentArea.appendChild(starsEl);
+            contentArea.appendChild(contentEl);
+            }
+            
+            if (forExport) {
+                targetElement.appendChild(outerDiv);
+            } else {
+                targetElement.appendChild(outerDiv);
+            }
+            return outerDiv;
+        }
+
+        // Stream control elements
+        const streamControlsSection = document.getElementById('streamControlsSection');
+        const streamFilterSubmitButton = document.getElementById('streamFilterSubmitButton');
+        let streamSelectedStarRatings = [];
+        let authorSortDirection = 'asc';
+        let titleSortDirection = 'asc';
+
+        // Setup function for stream control listeners
+        function setupStreamControlListeners() {
+            streamSelectedStarRatings = [1, 2, 3, 4, 5];
+            
+            const streamStarButtons = document.querySelectorAll('.stream-star-button');
+            
+            streamStarButtons.forEach(button => {
+                const newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
+            });
+            
+            document.querySelectorAll('.stream-star-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const value = parseInt(button.dataset.value);
+                    
+                    if (button.classList.contains('selected')) {
+                        button.classList.remove('selected');
+                        streamSelectedStarRatings = streamSelectedStarRatings.filter(rating => rating !== value);
+                    } else {
+                        button.classList.add('selected');
+                        streamSelectedStarRatings.push(value);
+                    }
+                    
+                    applyStreamFilters();
+                });
+            });
+            
+            
+            function applyStreamFilters(shouldSort = false, sortField = null) {
+                let filteredData = [...allReviewsData];
+                
+                if (streamSelectedStarRatings.length > 0) {
+                    filteredData = filteredData.filter(review => 
+                        streamSelectedStarRatings.includes(review.rating));
+                } else {
+                    filteredData = [];
+                }
+                
+                const searchTerm = titlebarSearchInput.value.toLowerCase();
+                if (searchTerm) {
+                    filteredData = filteredData.filter(review => 
+                        review.title.toLowerCase().includes(searchTerm) || 
+                        review.content.toLowerCase().includes(searchTerm) ||
+                        review.author.toLowerCase().includes(searchTerm));
+                }
+                
+                if (shouldSort && sortField) {
+                    if (sortField === 'author') {
+                        filteredData.sort((a, b) => {
+                            if (authorSortDirection === 'asc') {
+                                return a.author.localeCompare(b.author);
+                            } else {
+                                return b.author.localeCompare(a.author);
+                            }
+                        });
+                    } else if (sortField === 'title') {
+                        filteredData.sort((a, b) => {
+                            if (titleSortDirection === 'asc') {
+                                return a.title.localeCompare(b.title);
+                            } else {
+                                return b.title.localeCompare(a.title);
+                            }
+                        });
+                    }
+                }
+                
+                displayReviewsAsStream(filteredData);
+            }
+            
+        }
+
+        function updateSelectedState(reviewId, isSelected) {
+            if (isSelected) {
+                selectedRowIds.add(reviewId);
+            } else {
+                selectedRowIds.delete(reviewId);
+            }
+        }
+
+        function updateExportButtonState() {
+            exportSelectedButton.disabled = selectedRowIds.size === 0;
+            exportSelectedButton.innerHTML = `<i class="fas fa-file-export"></i> Export Selected (${selectedRowIds.size})`;
+        }
+
+        exportSelectedButton.addEventListener('click', async () => {
+            if (selectedRowIds.size === 0) {
+                alert('Please select at least one review to export.');
+                return;
+            }
+            
+            const selectedReviews = filteredReviewsData.filter(review => 
+                selectedRowIds.has(review.id.toString()));
+            
+            if (selectedReviews.length === 0) {
+                alert('No reviews selected for export.');
+                return;
+            }
+            
+            isExporting = true;
+            cancelExportRequested = false;
+            exportProgress.classList.add('active');
+            exportProgressBarFill.style.width = '0%';
+            exportProgressText.textContent = 'Starting export...';
+            exportProgressCount.textContent = `0/${selectedReviews.length}`;
+            
+            let exportedCount = 0;
+            for (let i = 0; i < selectedReviews.length; i++) {
+                if (cancelExportRequested) {
+                    exportProgressText.textContent = 'Export cancelled';
+                    setTimeout(() => {
+                        exportProgress.classList.remove('active');
+                    }, 2000);
+                    break;
+                }
+                
+                const review = selectedReviews[i];
+                exportProgressText.textContent = `Exporting: ${review.title}`;
+                exportProgressCount.textContent = `${i+1}/${selectedReviews.length}`;
+                exportProgressBarFill.style.width = `${((i+1) / selectedReviews.length) * 100}%`;
+                
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    await exportReview(review);
+                    exportedCount++;
+                } catch (e) {
+                    console.error('Error exporting review:', e);
+                }
+            }
+            
+            if (!cancelExportRequested) {
+                exportProgressText.textContent = `Exported ${exportedCount} reviews`;
+                setTimeout(() => {
+                    exportProgress.classList.remove('active');
+                }, 3000);
+            }
+            
+            isExporting = false;
+        });
+        
+        cancelExportButton.addEventListener('click', () => {
+            if (isExporting) {
+                cancelExportRequested = true;
+                exportProgressText.textContent = 'Cancelling...';
+            }
+        });
+
+        async function exportReview(review) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    screenshotRenderArea.innerHTML = '';
+                    const renderedReviewDiv = renderSingleReviewToElement(review, currentViewFormat, screenshotRenderArea, true);
+                    
+                    if (!renderedReviewDiv) {
+                        reject("Could not render review for export.");
+                        return;
+                    }
+    
+                    const images = renderedReviewDiv.getElementsByTagName('img');
+                    const promises = [];
+                    for (let img of images) {
+                        if (!img.complete) {
+                            promises.push(new Promise(resolve => { img.onload = resolve; img.onerror = resolve; }));
+                        }
+                    }
+                    await Promise.all(promises);
+                    
+                    await new Promise(resolve => setTimeout(resolve, 200));
+    
+                    screenshotRenderArea.style.left = '0px';
+                    screenshotRenderArea.style.top = '0px';
+                    screenshotRenderArea.style.opacity = '0.01';
+                    screenshotRenderArea.style.zIndex = '-1';
+    
+                    const canvas = await html2canvas(renderedReviewDiv, {
+                        useCORS: true, 
+                        allowTaint: true, 
+                        backgroundColor: null,
+                        scale: 2,
+                        logging: false
+                    });
+                    const imageURL = canvas.toDataURL('image/png');
+                    
+                    const firstThreeWords = review.content.split(' ').slice(0, 3).join('_') || 'review';
+                    const sanitizedAuthor = review.author.replace(/[^a-zA-Z0-9_]/g, '') || 'UnknownAuthor';
+                    const downloadLink = document.createElement('a');
+                    downloadLink.download = `${review.rating}_stars_${sanitizedAuthor}_${firstThreeWords}.png`;
+                    downloadLink.href = imageURL;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    
+                    resolve();
+                } catch (e) {
+                    console.error("Error generating screenshot:", e);
+                    reject(e);
+                } finally {
+                    screenshotRenderArea.innerHTML = '';
+                    screenshotRenderArea.style.left = '-9999px';
+                    screenshotRenderArea.style.top = '-9999px';
+                    screenshotRenderArea.style.opacity = '1';
+                    screenshotRenderArea.style.zIndex = 'auto';
+                }
+            });
+        }
+
+        // Image preloading (keep the same)
+        function preloadImages() {
+            console.log("Preloading images...");
+            
+            function testImageURL(url, description) {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        console.log(`✅ Successfully loaded ${description}: ${url}`);
+                        resolve(true);
+                    };
+                    img.onerror = () => {
+                        console.error(`❌ Failed to load ${description}: ${url}`);
+                        resolve(false);
+                    };
+                    img.src = url;
+                });
+            }
+            
+            Promise.all([
+                testImageURL(imageData.blankiphone, 'blankiphone (light)'),
+                testImageURL(imageData.blankiphoneDark, 'blankiphone_dark'),
+                testImageURL(imageData.headerdark, 'headerdark'),
+                testImageURL(imageData.headerlight, 'headerlight')
+            ]).then(results => {
+                console.log("Image preload complete:", 
+                    results.filter(r => r).length + " of " + results.length + " successful");
+            });
+        }
+        
+        window.addEventListener('load', preloadImages);
+    </script>
+</body>
+</html>
